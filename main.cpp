@@ -44,6 +44,8 @@ void compileExpression(const std::string &var, const std::string &lhs, const std
         emit("AND", resultReg, regLhs, regRhs);
     } else if (op == "|") {
         emit("OR", resultReg, regLhs, regRhs);
+    } else if (op == "^") {
+        emit("XOR", resultReg, regLhs, regRhs);
     }
 
     variables[var] = regCount - 1;
@@ -59,11 +61,17 @@ void compile(const std::vector<std::string> &source) {
         } else if (line.find("=") != std::string::npos) {
             size_t equalPos = line.find("=");
             std::string var = line.substr(0, equalPos - 1);
-            size_t opPos = line.find_first_of("+-*&|");
+            size_t opPos = line.find_first_of("+-*&|^");
             std::string lhs = line.substr(equalPos + 2, opPos - equalPos - 3);
             std::string op = line.substr(opPos, 1);
             std::string rhs = line.substr(opPos + 2);
             compileExpression(var, lhs, op, rhs);
+        } else if (line.find("PUSH") != std::string::npos) {
+            std::string var = line.substr(5);
+            emit("PUSH", "R" + std::to_string(variables[var]));
+        } else if (line.find("POP") != std::string::npos) {
+            std::string var = line.substr(4);
+            emit("POP", "R" + std::to_string(variables[var]));
         }
     }
 }
